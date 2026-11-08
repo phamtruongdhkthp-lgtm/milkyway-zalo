@@ -1,0 +1,6 @@
+{
+  "name": "MILKYWAY ZALO MANAGER",
+  "description": "Phần mềm quản lý đa tài khoản Zalo, tự động hóa kết bạn, nhắn tin chăm sóc khách hàng và CRM với giao diện Milkyway Glassmorphism cao cấp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

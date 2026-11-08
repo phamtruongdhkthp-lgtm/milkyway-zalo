@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .glass-card {
+    background: rgba(13, 19, 38, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  }
+
+  .glass-card-gold {
+    background: rgba(22, 27, 46, 0.75);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(212, 175, 55, 0.15);
+  }
+
+  .glass-input {
+    background: rgba(8, 12, 28, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    color: #ffffff;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .glass-input:focus {
+    border-color: #D4AF37;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+    outline: none;
+  }
+
+  .text-gold {
+    color: #D4AF37;
+  }
+
+  .bg-gold {
+    background-color: #D4AF37;
+  }
+
+  .border-gold {
+    border-color: #D4AF37;
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
+  }
+
+  .gold-glow-sm {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.22);
+  }
+
+  .galaxy-gradient {
+    background: radial-gradient(circle at 50% 20%, rgba(59, 31, 107, 0.35) 0%, rgba(13, 27, 62, 0.25) 45%, rgba(6, 8, 20, 0.95) 85%);
+  }
+}
+
+/* Custom Scrollbar for Galaxy theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(6, 8, 20, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.5);
+}
+
+/* Cosmic twinkling animations */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 0.9; transform: scale(1.2); }
+}
+
+@keyframes nebula-pulse {
+  0%, 100% { transform: scale(1) translate(0px, 0px); opacity: 0.35; }
+  50% { transform: scale(1.08) translate(-10px, 15px); opacity: 0.55; }
+}
+
+.animate-twinkle {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.animate-nebula {
+  animation: nebula-pulse 14s ease-in-out infinite alternate;
+}
