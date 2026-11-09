@@ -1,9 +1,16 @@
 import React from 'react';
-import { Sparkles, ShieldCheck, Database, Radio, RefreshCw, Cpu } from 'lucide-react';
+import { Sparkles, ShieldCheck, Database, Radio, RefreshCw, Cpu, Moon, Bell } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const Navbar: React.FC = () => {
-  const { accounts, setActiveTab, exportDatabaseJson, addLog } = useApp();
+  const { accounts, setActiveTab, exportDatabaseJson, addLog, galaxyBrightness, setGalaxyBrightness, totalUnreadCount } = useApp();
+
+  const toggleGalaxyBrightness = () => {
+    const nextVal = galaxyBrightness >= 0.85 ? 0.45 : galaxyBrightness >= 0.65 ? 0.85 : 0.65;
+    setGalaxyBrightness(nextVal);
+    const label = nextVal >= 0.85 ? 'Rực Rỡ' : nextVal >= 0.65 ? 'Chuẩn' : 'Dịu Nhẹ';
+    addLog('info', 'Độ sáng Dải Ngân Hà', `Chuyển độ sáng dải ngân hà sang mức: ${label} (${Math.round(nextVal * 100)}%)`);
+  };
 
   const onlineAccounts = accounts.filter(a => a.status === 'online' && a.isActive);
   const totalAccounts = accounts.length;
@@ -66,6 +73,33 @@ export const Navbar: React.FC = () => {
             {onlineAccounts.length}/{totalAccounts}
           </span>
           <span className="text-[10px] text-slate-400">Online</span>
+        </button>
+
+        {/* Unread Messages Quick Indicator */}
+        {totalUnreadCount > 0 && (
+          <button
+            onClick={() => setActiveTab('accounts')}
+            title={`Có tổng cộng ${totalUnreadCount} tin nhắn Zalo mới chưa đọc`}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-xs text-rose-200 transition-all cursor-pointer shadow-[0_0_12px_rgba(244,63,94,0.25)]"
+          >
+            <Bell className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+            <span className="hidden sm:inline font-bold">Tin mới:</span>
+            <span className="min-w-[18px] h-4.5 px-1 rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center animate-bounce">
+              {totalUnreadCount}
+            </span>
+          </button>
+        )}
+
+        {/* Galaxy Ambiance Toggle */}
+        <button
+          onClick={toggleGalaxyBrightness}
+          title="Chỉnh độ sáng Dải Ngân Hà Milky Way (Dịu nhẹ / Chuẩn / Rực rỡ)"
+          aria-label="Chỉnh độ sáng Dải Ngân Hà Milky Way"
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-950/40 via-amber-950/30 to-slate-900/60 border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 text-xs text-amber-200 transition-all hover:bg-slate-800/80 cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-pulse" />
+          <span className="hidden sm:inline font-medium">Ngân Hà:</span>
+          <span className="font-bold text-[#F5E08F]">{Math.round(galaxyBrightness * 100)}%</span>
         </button>
 
         {/* Quick Backup Action */}

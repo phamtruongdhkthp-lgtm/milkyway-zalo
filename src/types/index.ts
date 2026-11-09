@@ -14,6 +14,7 @@ export interface ZaloAccount {
   sessionEncrypted: string; // Simulated encrypted session hash, never plain password
   note?: string;
   zaloId?: string;
+  unreadCount?: number;
 }
 
 export interface Contact {
@@ -112,4 +113,28 @@ export interface ActivityLog {
   accountName?: string;
   action: string;
   details: string;
+}
+
+export interface DirectChatMessage {
+  id: string;
+  sender: 'me' | 'contact';
+  text: string;
+  time: string;
+  status: 'sent' | 'delivered' | 'seen';
+  attachmentType?: 'image' | 'file';
+  attachmentUrl?: string;
+  attachmentName?: string;
+}
+
+export interface DirectChatConversation {
+  id: string;
+  accountId: string;
+  contactName: string;
+  contactPhone: string;
+  contactAvatar: string;
+  isOnline: boolean;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  messages: DirectChatMessage[];
 }

@@ -24,7 +24,7 @@ interface NavItem {
 }
 
 export const Sidebar: React.FC = () => {
-  const { activeTab, setActiveTab, accounts, campaigns, contacts } = useApp();
+  const { activeTab, setActiveTab, accounts, campaigns, contacts, totalUnreadCount } = useApp();
 
   const runningCampaigns = campaigns.filter(c => c.status === 'running').length;
   const qrRequiredAccounts = accounts.filter(a => a.status === 'qr_required').length;
@@ -41,8 +41,8 @@ export const Sidebar: React.FC = () => {
       label: 'Quản lý tài khoản',
       sublabel: 'Đa tài khoản Zalo',
       icon: Users,
-      badge: qrRequiredAccounts > 0 ? `${qrRequiredAccounts} cần QR` : undefined,
-      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      badge: totalUnreadCount > 0 ? `${totalUnreadCount} tin mới` : qrRequiredAccounts > 0 ? `${qrRequiredAccounts} cần QR` : undefined,
+      badgeColor: totalUnreadCount > 0 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse' : 'bg-amber-500/20 text-amber-300 border-amber-500/30',
     },
     {
       id: 'friend_requests',

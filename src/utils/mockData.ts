@@ -16,7 +16,8 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     proxy: '103.142.12.88:8080 (VN Viettel Clean)',
     sessionEncrypted: 'aes-gcm-256:8f4c21a97d3b0e12',
     note: 'Tài khoản chính tiếp cận khách hàng VIP miền Bắc',
-    zaloId: 'zalo_sales_hn_01'
+    zaloId: 'zalo_sales_hn_01',
+    unreadCount: 3
   },
   {
     id: 'acc-2',
@@ -33,7 +34,8 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     proxy: '118.69.182.10:3128 (VN FPT Telecom)',
     sessionEncrypted: 'aes-gcm-256:7b1e42a89c2d1f43',
     note: 'Tài khoản trực hỗ trợ ticket và tư vấn đơn hàng',
-    zaloId: 'zalo_cskh_hn_vy'
+    zaloId: 'zalo_cskh_hn_vy',
+    unreadCount: 1
   },
   {
     id: 'acc-3',
@@ -50,7 +52,8 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     proxy: '14.225.244.15:8080 (VN VNPT Datacenter)',
     sessionEncrypted: 'aes-gcm-256:3d9c12e84a7f0b91',
     note: 'Chuyên kết nối nhóm BĐS và Chủ doanh nghiệp',
-    zaloId: 'zalo_corp_hcm_03'
+    zaloId: 'zalo_corp_hcm_03',
+    unreadCount: 0
   },
   {
     id: 'acc-4',
@@ -67,7 +70,8 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     proxy: 'Direct (IP Dân Cư Đà Nẵng)',
     sessionEncrypted: 'aes-gcm-256:6e2d91a78c4f1a23',
     note: 'Tài khoản hoạt động thị trường Đà Nẵng, Quảng Nam',
-    zaloId: 'zalo_dn_tuan'
+    zaloId: 'zalo_dn_tuan',
+    unreadCount: 2
   },
   {
     id: 'acc-5',

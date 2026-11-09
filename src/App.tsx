@@ -18,12 +18,12 @@ import { AuditLogView } from './components/modules/AuditLogView';
 import { SettingsAndPackagingView } from './components/modules/SettingsAndPackagingView';
 
 const MainLayout: React.FC = () => {
-  const { activeTab } = useApp();
+  const { activeTab, galaxyBrightness } = useApp();
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[#060814] text-slate-100 overflow-x-hidden selection:bg-[#D4AF37]/30 selection:text-amber-200">
       {/* Animated Milkyway stars background */}
-      <CosmicBackground />
+      <CosmicBackground opacity={galaxyBrightness} />
 
       {/* Top Navigation */}
       <Navbar />

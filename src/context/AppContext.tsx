@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { ZaloAccount, Contact, Campaign, ZaloGroup, ActivityLog } from '../types';
 import { INITIAL_ACCOUNTS, INITIAL_CONTACTS, INITIAL_GROUPS, INITIAL_CAMPAIGNS, INITIAL_LOGS } from '../utils/mockData';
 import { parsePhoneListFromText } from '../utils/phoneValidator';
+import { playNotificationSound } from '../utils/sound';
 
 export type NavTab = 
   | 'dashboard'
@@ -50,20 +51,47 @@ interface AppContextType {
   // Backup & Restore
   exportDatabaseJson: () => string;
   importDatabaseJson: (json: string) => boolean;
+
+  // Milky Way theme ambient
+  galaxyBrightness: number;
+  setGalaxyBrightness: (b: number) => void;
+
+  // Unread Messages & Notifications
+  totalUnreadCount: number;
+  setAccountUnreadCount: (accountId: string, count: number) => void;
+  simulateIncomingMessage: (targetAccountId?: string) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
 
-const STORAGE_KEY_PREFIX = 'milkyway_zalo_v1_';
+const STORAGE_KEY_PREFIX = 'milkyway_zalo_v2_';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [galaxyBrightness, setGalaxyBrightness] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_PREFIX + 'galaxy_brightness');
+      return saved ? parseFloat(saved) : 0.65;
+    } catch {
+      return 0.65;
+    }
+  });
 
   // Load state from localStorage with fallbacks to rich mockData
   const [accounts, setAccounts] = useState<ZaloAccount[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_PREFIX + 'accounts');
-      return saved ? JSON.parse(saved) : INITIAL_ACCOUNTS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((a: ZaloAccount) => {
+            if (typeof a.unreadCount === 'number') return a;
+            const init = INITIAL_ACCOUNTS.find(i => i.id === a.id);
+            return { ...a, unreadCount: init?.unreadCount ?? 0 };
+          });
+        }
+      }
+      return INITIAL_ACCOUNTS;
     } catch {
       return INITIAL_ACCOUNTS;
     }
@@ -374,6 +402,81 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Unread Messages Management
+  const totalUnreadCount = accounts.reduce((sum, a) => sum + (a.unreadCount || 0), 0);
+
+  const setAccountUnreadCount = useCallback((accountId: string, count: number) => {
+    const safeCount = Math.max(0, count);
+    setAccounts(prev => {
+      const current = prev.find(a => a.id === accountId);
+      if (current && (current.unreadCount ?? 0) === safeCount) {
+        return prev;
+      }
+      return prev.map(a => (a.id === accountId ? { ...a, unreadCount: safeCount } : a));
+    });
+  }, []);
+
+  const simulateIncomingMessage = (targetAccountId?: string) => {
+    const target = targetAccountId
+      ? accounts.find(a => a.id === targetAccountId)
+      : accounts.find(a => a.isActive && a.status === 'online') || accounts[0];
+
+    if (!target) return;
+
+    const sampleTexts = [
+      'Chào bạn! Cho mình hỏi bảng giá gói dịch vụ CSKH tự động bên bạn với ạ.',
+      'Dạ alo, mình vừa nhận được lời mời kết bạn, cho mình hỏi về dự án nha.',
+      'Sản phẩm này có hỗ trợ cài đặt trên máy tính Windows 11 không bạn?',
+      'Bên bạn có xuất hóa đơn VAT điện tử cho doanh nghiệp không ạ?',
+      'Mình đã xem qua tài liệu rồi, cho mình xin hẹn tư vấn trực tiếp vào chiều nay nhé!'
+    ];
+    const incomingText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+    const timeNow = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    // Update target account unread count
+    const nextUnread = (target.unreadCount || 0) + 1;
+    setAccounts(prev =>
+      prev.map(a => (a.id === target.id ? { ...a, unreadCount: nextUnread, lastActive: 'Vừa xong' } : a))
+    );
+
+    // Try updating localStorage chat conversation if present
+    try {
+      const storageKey = `milkyway_chat_${target.id}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const chats = JSON.parse(saved);
+        if (Array.isArray(chats) && chats.length > 0) {
+          // Add to first or random conversation
+          const targetConv = chats[Math.floor(Math.random() * chats.length)];
+          targetConv.unreadCount = (targetConv.unreadCount || 0) + 1;
+          targetConv.lastMessage = incomingText;
+          targetConv.lastMessageTime = timeNow;
+          targetConv.messages = targetConv.messages || [];
+          targetConv.messages.push({
+            id: 'sim-' + Date.now(),
+            sender: 'contact',
+            text: incomingText,
+            time: timeNow,
+            status: 'delivered'
+          });
+          localStorage.setItem(storageKey, JSON.stringify(chats));
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+
+    // Play notification sound
+    playNotificationSound();
+
+    addLog(
+      'info',
+      'Tin nhắn mới đến',
+      `Tài khoản [${target.name}] vừa nhận 1 tin nhắn mới: "${incomingText.substring(0, 45)}..."`,
+      target.name
+    );
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -403,6 +506,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         clearLogs,
         exportDatabaseJson,
         importDatabaseJson,
+        galaxyBrightness,
+        setGalaxyBrightness,
+        totalUnreadCount,
+        setAccountUnreadCount,
+        simulateIncomingMessage,
       }}
     >
       {children}
