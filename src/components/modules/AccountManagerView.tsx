@@ -22,7 +22,13 @@ import {
   Smartphone,
   Lock,
   Sparkles,
-  Info
+  Info,
+  ExternalLink,
+  Folder,
+  Monitor,
+  Copy,
+  Check,
+  Terminal
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ZaloAccount } from '../../types';
@@ -39,7 +45,11 @@ export const AccountManagerView: React.FC = () => {
     toggleAccountActive, 
     reconnectAccount,
     addLog,
-    simulateIncomingMessage
+    simulateIncomingMessage,
+    launchChromeProfile,
+    closeChromeProfile,
+    launchAllChromeProfiles,
+    closeAllChromeProfiles,
   } = useApp();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -47,6 +57,9 @@ export const AccountManagerView: React.FC = () => {
   const [editingAccount, setEditingAccount] = useState<ZaloAccount | null>(null);
   const [qrModalAccount, setQrModalAccount] = useState<ZaloAccount | null>(null);
   const [chatAccount, setChatAccount] = useState<ZaloAccount | null>(null);
+  const [chromePreviewAccount, setChromePreviewAccount] = useState<ZaloAccount | null>(null);
+  const [isChromeManagerModalOpen, setIsChromeManagerModalOpen] = useState(false);
+  const [copiedCmdId, setCopiedCmdId] = useState<string | null>(null);
   const [isQrSimulating, setIsQrSimulating] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [reconnectingId, setReconnectingId] = useState<string | null>(null);
@@ -60,6 +73,12 @@ export const AccountManagerView: React.FC = () => {
   const [maxDailyInvites, setMaxDailyInvites] = useState(40);
   const [maxDailyMessages, setMaxDailyMessages] = useState(150);
   const [note, setNote] = useState('');
+
+  const copyText = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCmdId(id);
+    setTimeout(() => setCopiedCmdId(null), 2500);
+  };
 
   // QR Login specific state
   const [qrCountdown, setQrCountdown] = useState(120);
@@ -247,14 +266,23 @@ export const AccountManagerView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 flex-shrink-0">
+        <div className="flex items-center space-x-3 flex-shrink-0 flex-wrap gap-y-2">
+          <button
+            onClick={() => setIsChromeManagerModalOpen(true)}
+            title="Quản lý kiến trúc Chrome Multi-Profile độc lập cho từng tài khoản Zalo"
+            className="px-3.5 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-200 hover:text-white font-bold text-xs transition-all shadow-[0_0_15px_rgba(59,130,246,0.25)] cursor-pointer flex items-center space-x-2"
+          >
+            <Monitor className="w-4 h-4 text-blue-400" />
+            <span>Chrome Profiles ({accounts.filter(a => a.chromeProfile?.status === 'running').length}/{accounts.length} Đang Mở)</span>
+          </button>
+
           <button
             onClick={() => simulateIncomingMessage()}
             title="Mô phỏng tin nhắn mới đến từ khách hàng ngẫu nhiên để kiểm tra số thông báo đỏ và chuông báo"
             className="px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-white font-bold text-xs transition-all shadow-[0_0_15px_rgba(244,63,94,0.15)] cursor-pointer flex items-center space-x-2"
           >
             <BellRing className="w-4 h-4 text-rose-400 animate-pulse" />
-            <span>Mô Phỏng Tin Nhắn Mới Đến</span>
+            <span>Mô Phỏng Tin Mới</span>
           </button>
 
           <button
@@ -419,6 +447,63 @@ export const AccountManagerView: React.FC = () => {
                   <span className="font-semibold">Phiên mã hóa:</span>
                 </div>
                 <span className="font-mono text-slate-300">{acc.sessionEncrypted.slice(0, 20)}...</span>
+              </div>
+
+              {/* Dedicated Chrome Multi-Profile Box */}
+              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-blue-500/25 space-y-2 mb-3">
+                <div className="flex items-center justify-between text-[11px]">
+                  <div className="flex items-center space-x-1.5 text-blue-300 font-bold">
+                    <Monitor className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Chrome Profile Riêng:</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center space-x-1 ${
+                    acc.chromeProfile?.status === 'running'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-slate-800 text-slate-400 border-white/10'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${acc.chromeProfile?.status === 'running' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                    <span>{acc.chromeProfile?.status === 'running' ? `Đang Mở (Port ${acc.chromeProfile.cdpPort})` : 'Đã Đóng'}</span>
+                  </span>
+                </div>
+
+                <div 
+                  className="text-[10px] text-slate-400 font-mono truncate flex items-center space-x-1.5 bg-slate-900/90 px-2 py-1 rounded-lg border border-white/5" 
+                  title={acc.chromeProfile?.profileDir || `C:\\MilkywayZalo\\Profiles\\profile_${acc.phone}`}
+                >
+                  <Folder className="w-3 h-3 text-[#D4AF37] flex-shrink-0" />
+                  <span className="truncate">{acc.chromeProfile?.profileDir || `C:\\MilkywayZalo\\Profiles\\profile_${acc.phone}`}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                  {acc.chromeProfile?.status === 'running' ? (
+                    <button
+                      onClick={() => closeChromeProfile(acc.id)}
+                      className="py-1.5 px-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] font-bold transition-all flex items-center justify-center space-x-1 cursor-pointer"
+                      title="Đóng tiến trình Chrome của tài khoản này"
+                    >
+                      <Power className="w-3 h-3" />
+                      <span>Đóng Chrome</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => launchChromeProfile(acc.id)}
+                      className="py-1.5 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold transition-all flex items-center justify-center space-x-1 cursor-pointer"
+                      title="Khởi chạy tiến trình Chrome độc lập với profile riêng"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Mở Chrome Riêng</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setChromePreviewAccount(acc)}
+                    className="py-1.5 px-2 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 border border-blue-500/30 text-[11px] font-bold transition-all flex items-center justify-center space-x-1 cursor-pointer"
+                    title="Xem trực quan cửa sổ Chrome đăng nhập Zalo Web"
+                  >
+                    <Monitor className="w-3 h-3 text-blue-400" />
+                    <span>Xem Zalo Web</span>
+                  </button>
+                </div>
               </div>
 
               {/* Direct Zalo Chat Workstation Trigger Button */}
@@ -1065,6 +1150,383 @@ export const AccountManagerView: React.FC = () => {
           onClose={() => setChatAccount(null)}
         />
       )}
+
+      {/* Chrome Multi-Profile Architecture Manager Modal */}
+      {isChromeManagerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="w-full max-w-5xl glass-card-gold rounded-2xl p-6 border border-[#D4AF37]/50 shadow-2xl space-y-5 my-6 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                  <Monitor className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                    <span>Trung Tâm Quản Lý Chrome Multi-Profile Đa Luồng</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                      Isolated Profiles
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-300">
+                    Mỗi tài khoản Zalo tương ứng 1 hồ sơ Chrome độc lập: riêng biệt UserDataDir, Cookies, LocalStorage và Cổng điều khiển CDP.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsChromeManagerModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Metrics Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-900/80 border border-white/10">
+                <span className="text-slate-400 text-[11px] block">Tổng số Hồ Sơ Chrome:</span>
+                <span className="text-lg font-extrabold text-white">{accounts.length} Profiles</span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900/80 border border-emerald-500/30">
+                <span className="text-slate-400 text-[11px] block">Cửa Sổ Đang Mở:</span>
+                <span className="text-lg font-extrabold text-emerald-400 flex items-center space-x-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>{accounts.filter(a => a.chromeProfile?.status === 'running').length} Cửa sổ</span>
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900/80 border border-white/10">
+                <span className="text-slate-400 text-[11px] block">Thư mục hồ sơ gốc:</span>
+                <span className="text-xs font-mono text-amber-200 truncate block font-semibold" title="C:\MilkywayZalo\Profiles\">
+                  C:\MilkywayZalo\Profiles\
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900/80 border border-white/10">
+                <span className="text-slate-400 text-[11px] block">Giao thức tự động:</span>
+                <span className="text-xs font-bold text-blue-300 block">
+                  Chrome DevTools Protocol (CDP)
+                </span>
+              </div>
+            </div>
+
+            {/* Global Controls & Script Generator */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-blue-950/40 border border-blue-500/30">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-white flex items-center space-x-1.5">
+                  <Terminal className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Điều khiển tiến trình hàng loạt & Tự động hóa Windows:</span>
+                </div>
+                <div className="text-[11px] text-slate-300">
+                  Mở đồng loạt tất cả các profile Chrome hoặc xuất file script chạy trực tiếp trên Windows PowerShell/CMD.
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                <button
+                  onClick={launchAllChromeProfiles}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Mở Tất Cả Chrome ({accounts.length})</span>
+                </button>
+
+                <button
+                  onClick={closeAllChromeProfiles}
+                  className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Power className="w-3.5 h-3.5" />
+                  <span>Đóng Tất Cả Chrome</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const batContent = `@echo off\nchcp 65001 > nul\necho ========================================================\necho  MILKYWAY ZALO - KHỞI CHẠY HỆ THỐNG MULTI-PROFILE CHROME\necho ========================================================\necho Đang mở ${accounts.length} trình duyệt Chrome độc lập cho từng tài khoản Zalo...\ntimeout /t 1 > nul\n\n` + 
+                    accounts.map((acc) => {
+                      const dir = acc.chromeProfile?.profileDir || `C:\\MilkywayZalo\\Profiles\\profile_${acc.phone}`;
+                      const port = acc.chromeProfile?.cdpPort || 9222;
+                      const proxyArg = acc.proxy ? `--proxy-server="${acc.proxy}"` : '';
+                      return `echo [${acc.name} - ${acc.phone}] Khoi chay Profile: ${acc.chromeProfile?.profileId} tai Port ${port}...\nstart "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="${dir}" --remote-debugging-port=${port} --no-first-run --no-default-browser-check ${proxyArg} --app="https://chat.zalo.me"\ntimeout /t 2 > nul\n`;
+                    }).join('\n') + `\necho ========================================================\necho Đã mở toàn bộ ${accounts.length} hồ sơ Chrome Zalo thành công!\necho ========================================================\npause\n`;
+
+                    const blob = new Blob([batContent], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'launch_all_zalo_profiles.bat';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    addLog('success', 'Chrome Profiles', 'Đã tải tệp launch_all_zalo_profiles.bat khởi chạy Windows.');
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-amber-200 border border-[#D4AF37]/40 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                  title="Tải tệp .bat để khởi chạy tất cả các Chrome profiles độc lập trên máy Windows thật"
+                >
+                  <Terminal className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Tải File .bat Chạy Windows</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Accounts Chrome Profile Table */}
+            <div className="rounded-xl border border-white/10 overflow-hidden bg-slate-900/60">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-950/80 text-slate-400 font-semibold border-b border-white/10 uppercase text-[10px]">
+                    <tr>
+                      <th className="py-2.5 px-3">Tài Khoản Zalo</th>
+                      <th className="py-2.5 px-3">Profile ID & Thư Mục Dữ Liệu</th>
+                      <th className="py-2.5 px-3 text-center">Cổng CDP</th>
+                      <th className="py-2.5 px-3">Proxy Riêng</th>
+                      <th className="py-2.5 px-3 text-center">Trạng Thái</th>
+                      <th className="py-2.5 px-3 text-right">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {accounts.map(acc => {
+                      const isRunning = acc.chromeProfile?.status === 'running';
+                      const cmdString = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="${acc.chromeProfile?.profileDir || 'C:\\MilkywayZalo\\Profiles\\profile_' + acc.phone}" --remote-debugging-port=${acc.chromeProfile?.cdpPort || 9222} ${acc.proxy ? `--proxy-server="${acc.proxy}"` : ''} --app="https://chat.zalo.me"`;
+
+                      return (
+                        <tr key={acc.id} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3 px-3">
+                            <div className="flex items-center space-x-2.5">
+                              <img
+                                src={acc.avatar}
+                                alt={acc.name}
+                                className="w-8 h-8 rounded-lg object-cover border border-white/10"
+                                onError={e => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80';
+                                }}
+                              />
+                              <div>
+                                <div className="font-bold text-white">{acc.name}</div>
+                                <div className="text-[11px] font-mono text-amber-200">{acc.phone}</div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <div className="font-mono text-blue-300 font-semibold text-[11px]">
+                              {acc.chromeProfile?.profileId || `profile_${acc.phone}`}
+                            </div>
+                            <div className="font-mono text-[10px] text-slate-400 truncate max-w-[260px]" title={acc.chromeProfile?.profileDir}>
+                              {acc.chromeProfile?.profileDir || `C:\\MilkywayZalo\\Profiles\\profile_${acc.phone}`}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 text-[11px]">
+                              {acc.chromeProfile?.cdpPort || 9222}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <span className="font-mono text-slate-300 text-[11px]">
+                              {acc.proxy || 'Direct (Mạng gốc)'}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3 text-center">
+                            <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              isRunning
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : 'bg-slate-800 text-slate-400 border-white/10'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                              <span>{isRunning ? 'Đang Chạy' : 'Đã Đóng'}</span>
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3 text-right">
+                            <div className="flex items-center justify-end space-x-1.5">
+                              {isRunning ? (
+                                <button
+                                  onClick={() => closeChromeProfile(acc.id)}
+                                  className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] font-semibold cursor-pointer"
+                                  title="Đóng cửa sổ Chrome này"
+                                >
+                                  Đóng
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => launchChromeProfile(acc.id)}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold cursor-pointer"
+                                  title="Khởi chạy cửa sổ Chrome với UserDataDir riêng"
+                                >
+                                  Mở Chrome
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => setChromePreviewAccount(acc)}
+                                className="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 border border-blue-500/30 text-[11px] font-semibold cursor-pointer"
+                                title="Xem cửa sổ Zalo Web mô phỏng"
+                              >
+                                Xem Web
+                              </button>
+
+                              <button
+                                onClick={() => copyText(cmdString, `cmd_${acc.id}`)}
+                                className="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-white/10 text-[11px] cursor-pointer"
+                                title="Sao chép lệnh CMD mở Chrome ngoài Windows"
+                              >
+                                {copiedCmdId === `cmd_${acc.id}` ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Technical Explanation Note */}
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-white/10 text-xs text-slate-300 space-y-1.5">
+              <div className="font-bold text-amber-300 flex items-center space-x-1.5">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Giải thích cơ chế cách ly Chrome Multi-Profile chống Checkpoint:</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Mỗi khi bạn thêm 1 tài khoản mới, hệ thống tự động sinh 1 thư mục dữ liệu biệt lập (<code className="text-[#D4AF37]">--user-data-dir="C:\MilkywayZalo\Profiles\profile_..."</code>). 
+                Nhờ vậy, Google Chrome khởi chạy độc lập hoàn toàn bộ nhớ cache, session cookie, localStorage, IndexedDB và vân tay trình duyệt. 
+                Bạn có thể mở đồng thời hàng chục tài khoản Zalo trên cùng 1 máy tính mà không bao giờ bị đè phiên hoặc checkpoint chéo.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Realistic Chrome Browser Window Mockup Modal for an Account */}
+      {chromePreviewAccount && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 overflow-y-auto">
+          <div className="w-full max-w-5xl rounded-2xl bg-[#1e1f22] border border-slate-700 shadow-2xl overflow-hidden flex flex-col my-4 max-h-[92vh]">
+            {/* Chrome Window Title Bar & Tabs */}
+            <div className="bg-[#2b2d30] px-3 pt-2.5 pb-0 flex items-center justify-between border-b border-black/40 select-none">
+              <div className="flex items-center space-x-2">
+                {/* Active Tab */}
+                <div className="flex items-center space-x-2 bg-[#1e1f22] px-3.5 py-1.5 rounded-t-xl text-xs font-semibold text-slate-100 border-t border-x border-white/10 relative -bottom-[1px]">
+                  <div className="w-4 h-4 rounded-full bg-[#0068ff] flex items-center justify-center text-[10px] font-black text-white">
+                    Z
+                  </div>
+                  <span className="truncate max-w-[200px]">Zalo Web - {chromePreviewAccount.name}</span>
+                  <button 
+                    onClick={() => setChromePreviewAccount(null)}
+                    className="p-0.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {/* Profile Badge Tag */}
+                <div className="text-[10px] px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono hidden sm:block">
+                  Profile: {chromePreviewAccount.chromeProfile?.profileId || `profile_${chromePreviewAccount.phone}`}
+                </div>
+              </div>
+
+              {/* Windows Window Controls */}
+              <div className="flex items-center space-x-2 text-slate-400">
+                <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 text-xs">−</button>
+                <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 text-xs">□</button>
+                <button 
+                  onClick={() => setChromePreviewAccount(null)}
+                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-rose-600 hover:text-white text-xs transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Chrome Navigation & Omnibox Bar */}
+            <div className="bg-[#1e1f22] p-2 flex items-center space-x-2 border-b border-white/5 text-xs">
+              <div className="flex items-center space-x-1 text-slate-400">
+                <button className="p-1.5 rounded-full hover:bg-white/10 hover:text-white cursor-pointer">←</button>
+                <button className="p-1.5 rounded-full hover:bg-white/10 hover:text-white cursor-pointer">→</button>
+                <button className="p-1.5 rounded-full hover:bg-white/10 hover:text-white cursor-pointer">↻</button>
+              </div>
+
+              {/* Omnibox / URL Bar */}
+              <div className="flex-1 flex items-center space-x-2 bg-[#2b2d30] px-3 py-1.5 rounded-full border border-white/10 text-slate-300 font-mono text-[11px]">
+                <Lock className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                <span className="text-emerald-400 font-semibold">https://</span>
+                <span className="text-white font-medium">chat.zalo.me</span>
+                <span className="text-slate-500">/conversation?id={chromePreviewAccount.zaloId || chromePreviewAccount.id}</span>
+              </div>
+
+              {/* Profile Avatar & Status in Chrome Bar */}
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-slate-800 border border-white/10">
+                  <img
+                    src={chromePreviewAccount.avatar}
+                    alt={chromePreviewAccount.name}
+                    className="w-5 h-5 rounded-full object-cover"
+                  />
+                  <span className="text-[11px] text-slate-200 font-semibold hidden md:inline">
+                    {chromePreviewAccount.name.split(' ')[0]}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile UserDataDir & CLI Launch Command Header */}
+            <div className="bg-slate-900/90 px-4 py-2 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center space-x-2 text-[11px] text-slate-300 font-mono">
+                <Folder className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span className="text-slate-400">UserDataDir:</span>
+                <span className="text-amber-200 font-semibold">{chromePreviewAccount.chromeProfile?.profileDir || `C:\\MilkywayZalo\\Profiles\\profile_${chromePreviewAccount.phone}`}</span>
+                <span className="text-slate-500">|</span>
+                <span className="text-slate-400">CDP Port:</span>
+                <span className="text-blue-300 font-semibold">{chromePreviewAccount.chromeProfile?.cdpPort || 9222}</span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    const cmd = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="${chromePreviewAccount.chromeProfile?.profileDir || 'C:\\MilkywayZalo\\Profiles\\profile_' + chromePreviewAccount.phone}" --remote-debugging-port=${chromePreviewAccount.chromeProfile?.cdpPort || 9222} ${chromePreviewAccount.proxy ? `--proxy-server="${chromePreviewAccount.proxy}"` : ''} --app="https://chat.zalo.me"`;
+                    copyText(cmd, 'cmd_preview');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-amber-200 border border-[#D4AF37]/30 text-[11px] font-semibold flex items-center space-x-1 cursor-pointer"
+                  title="Sao chép câu lệnh CMD để chạy cửa sổ Chrome này ngoài hệ điều hành Windows"
+                >
+                  {copiedCmdId === 'cmd_preview' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[#D4AF37]" />}
+                  <span>{copiedCmdId === 'cmd_preview' ? 'Đã sao chép lệnh Windows!' : 'Sao chép lệnh CMD mở Chrome'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (chromePreviewAccount.chromeProfile?.status === 'running') {
+                      closeChromeProfile(chromePreviewAccount.id);
+                    } else {
+                      launchChromeProfile(chromePreviewAccount.id);
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center space-x-1 ${
+                    chromePreviewAccount.chromeProfile?.status === 'running'
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/30 hover:bg-rose-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
+                  }`}
+                >
+                  <Power className="w-3 h-3" />
+                  <span>{chromePreviewAccount.chromeProfile?.status === 'running' ? 'Đóng Profile' : 'Mở Profile'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Chrome Content Body - Embedded Zalo Web Direct Chat Workstation */}
+            <div className="flex-1 bg-[#0b1021] overflow-hidden min-h-[500px]">
+              <ZaloDirectChatModal
+                account={chromePreviewAccount}
+                onClose={() => setChromePreviewAccount(null)}
+                isEmbedded={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+

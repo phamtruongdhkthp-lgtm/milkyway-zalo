@@ -14,7 +14,9 @@ import {
   Check, 
   BookOpen, 
   ExternalLink,
-  Laptop
+  Laptop,
+  Monitor,
+  Folder
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -162,13 +164,94 @@ export const SettingsAndPackagingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Section 3: Database Backup & Restore & VPS Scaling */}
+      {/* Section 3: Dedicated Chrome Multi-Profile Architecture */}
+      <div className="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+        <div className="flex items-center space-x-2.5 text-[#D4AF37]">
+          <Monitor className="w-5 h-5 text-blue-400" />
+          <h3 className="text-base font-bold text-white">
+            3. Kiến Trúc Vận Hành Đa Trình Duyệt Chrome (Multi-Profile Automation)
+          </h3>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-semibold">
+            Chuẩn Zalo Desktop Tool
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-300 leading-relaxed">
+          Đúng theo cơ chế thực tế của các phần mềm marketing chuyên nghiệp trên Windows (như Simple Zalo, ZaloPlus), 
+          ứng dụng <strong>không gộp chung phiên đăng nhập</strong> mà phân bổ <strong>mỗi tài khoản Zalo là 1 tiến trình Google Chrome độc lập hoàn toàn</strong>.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-white/5 space-y-1.5">
+            <span className="font-bold text-amber-200 block">1. Độc lập Thư mục Dữ liệu</span>
+            <p className="text-[11px] text-slate-400 leading-relaxed font-mono">
+              --user-data-dir="C:\MilkywayZalo\Profiles\profile_..."
+            </p>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Mỗi tài khoản lưu Cookies, LocalStorage, IndexedDB và Cache riêng biệt. Khi mở nhiều tài khoản cùng lúc không bao giờ bị xung đột hoặc đè phiên.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-white/5 space-y-1.5">
+            <span className="font-bold text-emerald-300 block">2. Giao thức Điều khiển CDP</span>
+            <p className="text-[11px] text-slate-400 leading-relaxed font-mono">
+              --remote-debugging-port=9222...
+            </p>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Mở cổng Chrome DevTools Protocol để ứng dụng quản trị gửi lệnh tự động hóa (gửi tin, kết bạn) chính xác qua Puppeteer/Playwright.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-white/5 space-y-1.5">
+            <span className="font-bold text-blue-300 block">3. Cách ly Proxy chống Ban</span>
+            <p className="text-[11px] text-slate-400 leading-relaxed font-mono">
+              --proxy-server="ip:port"
+            </p>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Mỗi profile Chrome có thể định tuyến qua một IP Proxy riêng. Zalo Server nhận diện mỗi tài khoản là một thiết bị và mạng Internet hoàn toàn khác nhau.
+            </p>
+          </div>
+        </div>
+
+        {/* Node.js / Electron child_process code sample */}
+        <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 font-mono text-xs">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] mb-1.5">
+            <span>Mã nguồn khởi chạy tiến trình Chrome độc lập trong Electron / Node.js Local Daemon:</span>
+            <button
+              onClick={() => copyToClipboard(`const { spawn } = require('child_process');\n\nfunction launchZaloChrome(profileDir, port, proxy) {\n  const chromePath = 'C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe';\n  const args = [\n    \`--user-data-dir=\${profileDir}\`,\n    \`--remote-debugging-port=\${port}\`,\n    '--no-first-run',\n    '--no-default-browser-check',\n    '--app=https://chat.zalo.me'\n  ];\n  if (proxy) args.push(\`--proxy-server=\${proxy}\`);\n  \n  return spawn(chromePath, args, { detached: true, stdio: 'ignore' });\n}`, 'chrome_spawn')}
+              className="flex items-center space-x-1 text-[#D4AF37] hover:underline"
+            >
+              {copiedKey === 'chrome_spawn' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedKey === 'chrome_spawn' ? 'Đã sao chép' : 'Sao chép code'}</span>
+            </button>
+          </div>
+          <pre className="text-blue-300 leading-relaxed overflow-x-auto text-[11px]">
+{`const { spawn } = require('child_process');
+
+function launchZaloChrome(profileDir, port, proxy) {
+  const chromePath = 'C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe';
+  const args = [
+    \`--user-data-dir=\${profileDir}\`,
+    \`--remote-debugging-port=\${port}\`,
+    '--no-first-run',
+    '--no-default-browser-check',
+    '--app=https://chat.zalo.me'
+  ];
+  if (proxy) args.push(\`--proxy-server=\${proxy}\`);
+  
+  return spawn(chromePath, args, { detached: true, stdio: 'ignore' });
+}`}
+          </pre>
+        </div>
+      </div>
+
+      {/* Section 4: Database Backup & Restore & VPS Scaling */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Backup & Restore Box */}
         <div className="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
           <div className="flex items-center space-x-2 text-[#D4AF37]">
             <Database className="w-5 h-5" />
-            <h3 className="text-sm font-bold text-white">Sao Lưu & Khôi Phục Dữ Liệu</h3>
+            <h3 className="text-sm font-bold text-white">4. Sao Lưu & Khôi Phục Dữ Liệu</h3>
           </div>
 
           <p className="text-xs text-slate-300 leading-relaxed">

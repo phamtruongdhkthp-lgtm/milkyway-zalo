@@ -17,7 +17,14 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     sessionEncrypted: 'aes-gcm-256:8f4c21a97d3b0e12',
     note: 'Tài khoản chính tiếp cận khách hàng VIP miền Bắc',
     zaloId: 'zalo_sales_hn_01',
-    unreadCount: 3
+    unreadCount: 3,
+    chromeProfile: {
+      profileId: 'profile_0982112334',
+      profileDir: 'C:\\MilkywayZalo\\Profiles\\profile_0982112334',
+      cdpPort: 9222,
+      status: 'running',
+      lastLaunchedAt: '2 phút trước'
+    }
   },
   {
     id: 'acc-2',
@@ -35,7 +42,14 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     sessionEncrypted: 'aes-gcm-256:7b1e42a89c2d1f43',
     note: 'Tài khoản trực hỗ trợ ticket và tư vấn đơn hàng',
     zaloId: 'zalo_cskh_hn_vy',
-    unreadCount: 1
+    unreadCount: 1,
+    chromeProfile: {
+      profileId: 'profile_0915667889',
+      profileDir: 'C:\\MilkywayZalo\\Profiles\\profile_0915667889',
+      cdpPort: 9223,
+      status: 'running',
+      lastLaunchedAt: '5 phút trước'
+    }
   },
   {
     id: 'acc-3',
@@ -53,7 +67,13 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     sessionEncrypted: 'aes-gcm-256:3d9c12e84a7f0b91',
     note: 'Chuyên kết nối nhóm BĐS và Chủ doanh nghiệp',
     zaloId: 'zalo_corp_hcm_03',
-    unreadCount: 0
+    unreadCount: 0,
+    chromeProfile: {
+      profileId: 'profile_0903221445',
+      profileDir: 'C:\\MilkywayZalo\\Profiles\\profile_0903221445',
+      cdpPort: 9224,
+      status: 'closed'
+    }
   },
   {
     id: 'acc-4',
@@ -71,7 +91,13 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     sessionEncrypted: 'aes-gcm-256:6e2d91a78c4f1a23',
     note: 'Tài khoản hoạt động thị trường Đà Nẵng, Quảng Nam',
     zaloId: 'zalo_dn_tuan',
-    unreadCount: 2
+    unreadCount: 2,
+    chromeProfile: {
+      profileId: 'profile_0868990112',
+      profileDir: 'C:\\MilkywayZalo\\Profiles\\profile_0868990112',
+      cdpPort: 9225,
+      status: 'closed'
+    }
   },
   {
     id: 'acc-5',
@@ -88,7 +114,13 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     proxy: '103.74.120.44:3128',
     sessionEncrypted: 'aes-gcm-256:expired_token_need_reauth',
     note: 'Phiên đăng nhập hết hạn sau 30 ngày, cần quét mã QR',
-    zaloId: 'zalo_mkt_event'
+    zaloId: 'zalo_mkt_event',
+    chromeProfile: {
+      profileId: 'profile_0794556778',
+      profileDir: 'C:\\MilkywayZalo\\Profiles\\profile_0794556778',
+      cdpPort: 9226,
+      status: 'closed'
+    }
   },
   {
     id: 'acc-6',
@@ -105,7 +137,13 @@ export const INITIAL_ACCOUNTS: ZaloAccount[] = [
     proxy: 'Direct',
     sessionEncrypted: 'aes-gcm-256:4a8b12c93d5e7f01',
     note: 'Tài khoản nuôi dự phòng, hạn chế gửi để tăng trust',
-    zaloId: 'zalo_backup_06'
+    zaloId: 'zalo_backup_06',
+    chromeProfile: {
+      profileId: 'profile_0888334556',
+      profileDir: 'C:\\MilkywayZalo\\Profiles\\profile_0888334556',
+      cdpPort: 9227,
+      status: 'closed'
+    }
   }
 ];
 
@@ -258,8 +296,28 @@ export const INITIAL_GROUPS: ZaloGroup[] = [
     memberCount: 95,
     myRole: 'member',
     accountId: 'acc-2',
+    isCommunityHidden: false,
     members: [
       { id: 'm-10', name: 'Lâm Văn Hải', zaloId: 'hai_fb_coffee', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80', phoneMasked: '0932***556', isFriend: false, isOptOut: false, role: 'member' }
+    ]
+  },
+  {
+    id: 'grp-4',
+    name: 'Cộng Đồng Đầu Tư Chứng Khoán & Tài Chính 2026 (ẨN THÀNH VIÊN)',
+    avatar: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=200&h=200&q=80',
+    memberCount: 785,
+    myRole: 'member',
+    accountId: 'acc-1',
+    isCommunityHidden: true,
+    communityLink: 'https://zalo.me/g/cktc2026',
+    scannedAt: '2026-11-08 14:10',
+    lastScanCount: 16,
+    members: [
+      { id: 'm-11', name: 'Trịnh Gia Huy (Chuyên Viên Vốn)', zaloId: 'huy_vps', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80', phoneMasked: '0981***928', isFriend: false, isOptOut: false, role: 'admin', isDiscoveredFromHidden: true, discoveryMethod: 'admin_roster', lastActiveSnippet: 'Admin nhóm cộng đồng' },
+      { id: 'm-12', name: 'Nguyễn Bích Thủy', zaloId: 'thuy_investor', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&h=100&q=80', phoneMasked: '0975***231', isFriend: false, isOptOut: false, role: 'member', isDiscoveredFromHidden: true, discoveryMethod: 'reaction', lastActiveSnippet: 'Thả tim tin nhắn phân tích thị trường' },
+      { id: 'm-13', name: 'Hoàng Quốc Tuấn', zaloId: 'tuan_crypto', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100&q=80', phoneMasked: '0919***882', isFriend: false, isOptOut: false, role: 'member', isDiscoveredFromHidden: true, discoveryMethod: 'message_history', lastActiveSnippet: 'Nhắn: "Mã FPT điểm mua nào đẹp ad?"' },
+      { id: 'm-14', name: 'Đoàn Kim Oanh', zaloId: 'oanh_banker', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&h=100&q=80', phoneMasked: '0963***449', isFriend: false, isOptOut: false, role: 'member', isDiscoveredFromHidden: true, discoveryMethod: 'reaction', lastActiveSnippet: 'Thả like bài ghim room VIP' },
+      { id: 'm-15', name: 'Trần Văn Cường', zaloId: 'cuong_trader', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&h=100&q=80', phoneMasked: '0938***711', isFriend: false, isOptOut: false, role: 'member', isDiscoveredFromHidden: true, discoveryMethod: 'cdp_dom_extract', lastActiveSnippet: 'Quét từ DOM WebSocket Zalo Web' }
     ]
   }
 ];

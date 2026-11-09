@@ -17,10 +17,12 @@ import {
   X,
   Sparkles,
   PhoneCall,
-  Calendar
+  Calendar,
+  FileText
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Contact } from '../../types';
+import { downloadTxtFile, formatCrmContactsToTxt, getStandardContactSampleTxt } from '../../utils/txtFormat';
 
 export const CustomerCrmView: React.FC = () => {
   const { 
@@ -152,21 +154,17 @@ export const CustomerCrmView: React.FC = () => {
     addLog('info', 'Tương tác CRM', `Đã cập nhật thời gian liên hệ mới nhất.`);
   };
 
-  const exportContactsCsv = () => {
-    const header = 'Họ và tên,Số điện thoại,Tài khoản liên quan,Nhóm khách hàng,Nguồn,Trạng thái kết bạn,Từ chối nhận tin,Liên hệ gần nhất,Ghi chú\n';
-    const rows = filteredContacts.map(c => {
-      const acc = accounts.find(a => a.id === c.zaloAccountRelated);
-      const cleanNotes = (c.notes || '').replace(/"/g, '""');
-      return `"${c.name}","${c.phone}","${acc?.name || ''}","${c.tags.join('; ')}","${c.source}","${c.friendStatus}","${c.isOptOut ? 'Có' : 'Không'}","${c.lastContactedAt || ''}","${cleanNotes}"`;
-    }).join('\n');
+  const exportContactsTxt = () => {
+    const accountNamesMap = accounts.reduce((acc, a) => ({ ...acc, [a.id]: a.name }), {} as Record<string, string>);
+    const content = formatCrmContactsToTxt(filteredContacts, accountNamesMap);
+    const filename = `Danh_sach_Khach_hang_CRM_${new Date().toISOString().split('T')[0]}.txt`;
+    downloadTxtFile(filename, content);
+    addLog('info', 'Xuất File TXT', `Đã xuất ${filteredContacts.length} khách hàng ra file TXT chuẩn đồng nhất.`);
+  };
 
-    const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Danh_sach_Khach_hang_CRM_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadSampleTxt = () => {
+    const sample = getStandardContactSampleTxt();
+    downloadTxtFile('Danh_sach_Khach_hang_Mau_Chuan.txt', sample);
   };
 
   return (
@@ -179,11 +177,20 @@ export const CustomerCrmView: React.FC = () => {
             <span>Hệ Thống Quản Lý Khách Hàng (Mini CRM)</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Lưu trữ danh bạ, phân loại phễu bán hàng, quản lý danh sách Opt-out từ chối nhận tin và ngăn gửi trùng chiến dịch.
+            Lưu trữ danh bạ, phân loại phễu bán hàng, quản lý danh sách Opt-out từ chối nhận tin và ngăn gửi trùng chiến dịch qua file TXT chuẩn.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleDownloadSampleTxt}
+            className="px-3 py-2 rounded-xl bg-slate-900/80 border border-white/15 text-slate-300 hover:text-white hover:border-[#D4AF37]/50 text-xs font-semibold flex items-center space-x-1.5 cursor-pointer"
+            title="Tải file TXT mẫu chuẩn cấu trúc SĐT|Họ tên|Ghi chú"
+          >
+            <FileText className="w-4 h-4 text-blue-400" />
+            <span>File TXT Mẫu</span>
+          </button>
+
           <button
             onClick={() => setIsImportModalOpen(true)}
             className="px-3.5 py-2 rounded-xl bg-slate-900/80 border border-white/15 text-slate-200 hover:text-white hover:border-[#D4AF37]/50 text-xs font-semibold flex items-center space-x-1.5 cursor-pointer"
@@ -193,11 +200,12 @@ export const CustomerCrmView: React.FC = () => {
           </button>
 
           <button
-            onClick={exportContactsCsv}
+            onClick={exportContactsTxt}
             className="px-3.5 py-2 rounded-xl bg-slate-900/80 border border-white/15 text-slate-200 hover:text-white hover:border-[#D4AF37]/50 text-xs font-semibold flex items-center space-x-1.5 cursor-pointer"
+            title="Xuất toàn bộ danh sách khách hàng ra file TXT chuẩn đồng nhất"
           >
             <Download className="w-4 h-4 text-[#D4AF37]" />
-            <span>Xuất CSV</span>
+            <span>Xuất File TXT</span>
           </button>
 
           <button
@@ -577,16 +585,53 @@ export const CustomerCrmView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Dán nội dung TXT (Mỗi dòng một khách, định dạng: SĐT hoặc SĐT, Tên):
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-slate-300">
+                    Dán nội dung TXT (Định dạng chuẩn: <span className="text-[#D4AF37] font-mono">SĐT|Họ tên|Ghi chú</span> hoặc mỗi dòng 1 SĐT):
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleDownloadSampleTxt}
+                    className="text-[11px] text-[#D4AF37] hover:underline flex items-center space-x-1"
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Tải file mẫu</span>
+                  </button>
+                </div>
                 <textarea
-                  rows={8}
+                  rows={7}
                   value={importText}
                   onChange={e => setImportText(e.target.value)}
-                  placeholder="0988776655, Nguyễn Văn A&#10;0912345678, Trần Thị B&#10;0903112233"
+                  placeholder="0988776655|Nguyễn Thành Nam|Bất Động Sản VIP&#10;0912345678|Trần Thị Thu Hương|Spa Làm Đẹp&#10;0908123456|Lê Hoàng Long|Chủ Doanh Nghiệp&#10;0933998877"
                   className="w-full p-3 rounded-xl glass-input text-xs font-mono leading-relaxed"
                 />
+
+                <div className="mt-2 flex items-center space-x-2">
+                  <input
+                    type="file"
+                    accept=".txt"
+                    id="crm-txt-upload"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        const content = ev.target?.result as string;
+                        if (content) setImportText(content);
+                      };
+                      reader.readAsText(file);
+                    }}
+                  />
+                  <label
+                    htmlFor="crm-txt-upload"
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-semibold cursor-pointer flex items-center space-x-1.5"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>Chọn tệp .txt từ máy tính</span>
+                  </label>
+                  <span className="text-[11px] text-slate-400">Chỉ chấp nhận file .txt chuẩn</span>
+                </div>
               </div>
             </div>
 
@@ -601,9 +646,9 @@ export const CustomerCrmView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleImportTxt}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37] to-amber-600 text-slate-950 font-bold text-xs hover:brightness-110 cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37] to-amber-600 text-slate-950 font-bold text-xs hover:brightness-110 cursor-pointer shadow-lg"
               >
-                Xác Nhận Nhập Data
+                Xác Nhận Nhập TXT
               </button>
             </div>
           </div>

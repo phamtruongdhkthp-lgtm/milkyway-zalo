@@ -1,3 +1,12 @@
+export interface ChromeProfileInfo {
+  profileId: string;
+  profileDir: string;
+  cdpPort: number;
+  status: 'running' | 'closed';
+  lastLaunchedAt?: string;
+  userAgent?: string;
+}
+
 export interface ZaloAccount {
   id: string;
   name: string;
@@ -15,6 +24,7 @@ export interface ZaloAccount {
   note?: string;
   zaloId?: string;
   unreadCount?: number;
+  chromeProfile?: ChromeProfileInfo;
 }
 
 export interface Contact {
@@ -68,7 +78,7 @@ export interface MessageTask {
 export interface Campaign {
   id: string;
   name: string;
-  type: 'friend_request' | 'txt_message' | 'group_message';
+  type: 'friend_request' | 'txt_message' | 'group_message' | 'combo_friend_and_message';
   accountIds: string[];
   totalCount: number;
   processedCount: number;
@@ -90,10 +100,15 @@ export interface GroupMember {
   zaloId: string;
   avatar: string;
   phoneMasked?: string;
+  phone?: string;
   isFriend: boolean;
   isOptOut: boolean;
   role: 'admin' | 'deputy' | 'member';
   joinedAt?: string;
+  isDiscoveredFromHidden?: boolean; // Được quét từ nhóm cộng đồng ẩn thành viên
+  discoveryMethod?: 'reaction' | 'message_history' | 'admin_roster' | 'cdp_dom_extract';
+  lastActiveSnippet?: string;
+  gender?: 'male' | 'female' | 'unknown';
 }
 
 export interface ZaloGroup {
@@ -103,6 +118,10 @@ export interface ZaloGroup {
   memberCount: number;
   myRole: 'admin' | 'deputy' | 'member';
   accountId: string;
+  isCommunityHidden?: boolean; // Nhóm cộng đồng đã ẩn danh sách thành viên
+  communityLink?: string;
+  scannedAt?: string;
+  lastScanCount?: number;
   members: GroupMember[];
 }
 

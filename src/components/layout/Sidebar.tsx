@@ -29,6 +29,8 @@ export const Sidebar: React.FC = () => {
   const runningCampaigns = campaigns.filter(c => c.status === 'running').length;
   const qrRequiredAccounts = accounts.filter(a => a.status === 'qr_required').length;
 
+  const UNIFIED_BLUE_BADGE = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+
   const navItems: NavItem[] = [
     {
       id: 'dashboard',
@@ -42,7 +44,7 @@ export const Sidebar: React.FC = () => {
       sublabel: 'Đa tài khoản Zalo',
       icon: Users,
       badge: totalUnreadCount > 0 ? `${totalUnreadCount} tin mới` : qrRequiredAccounts > 0 ? `${qrRequiredAccounts} cần QR` : undefined,
-      badgeColor: totalUnreadCount > 0 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse' : 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      badgeColor: UNIFIED_BLUE_BADGE,
     },
     {
       id: 'friend_requests',
@@ -56,13 +58,15 @@ export const Sidebar: React.FC = () => {
       sublabel: 'Gửi tin theo file TXT',
       icon: MessageSquareText,
       badge: runningCampaigns > 0 ? `${runningCampaigns} Đang chạy` : undefined,
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      badgeColor: UNIFIED_BLUE_BADGE,
     },
     {
       id: 'group_messaging',
-      label: 'Nhắn tin nhóm',
-      sublabel: 'Thành viên hội đồng Zalo',
+      label: 'Quét & Nhắn tin nhóm',
+      sublabel: 'Quét nhóm ẩn & 3 chế độ',
       icon: MessagesSquare,
+      badge: 'Hot',
+      badgeColor: UNIFIED_BLUE_BADGE,
     },
     {
       id: 'crm',
@@ -70,7 +74,7 @@ export const Sidebar: React.FC = () => {
       sublabel: 'Mini CRM & Blacklist',
       icon: ContactRound,
       badge: contacts.length,
-      badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+      badgeColor: UNIFIED_BLUE_BADGE,
     },
     {
       id: 'logs',

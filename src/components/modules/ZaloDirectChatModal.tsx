@@ -31,6 +31,7 @@ import { playNotificationSound } from '../../utils/sound';
 interface ZaloDirectChatModalProps {
   account: ZaloAccount;
   onClose: () => void;
+  isEmbedded?: boolean;
 }
 
 const SAMPLE_INITIAL_CHATS: Record<string, DirectChatConversation[]> = {
@@ -176,7 +177,7 @@ const AUTO_REPLIES = [
   'Cho mình xin số hotline kỹ thuật để bên mình tiện liên hệ nhé.',
 ];
 
-export const ZaloDirectChatModal: React.FC<ZaloDirectChatModalProps> = ({ account, onClose }) => {
+export const ZaloDirectChatModal: React.FC<ZaloDirectChatModalProps> = ({ account, onClose, isEmbedded = false }) => {
   const { contacts, updateAccount, addLog, setAccountUnreadCount } = useApp();
 
   const [conversations, setConversations] = useState<DirectChatConversation[]>(() => {
@@ -403,9 +404,9 @@ export const ZaloDirectChatModal: React.FC<ZaloDirectChatModalProps> = ({ accoun
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 animate-fadeIn">
+    <div className={isEmbedded ? "w-full h-full flex flex-col" : "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 animate-fadeIn"}>
       {/* Main Zalo Window Container */}
-      <div className="w-full max-w-5xl h-[88vh] rounded-2xl glass-card-gold border border-[#D4AF37]/50 shadow-[0_0_50px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden relative">
+      <div className={`w-full ${isEmbedded ? 'h-full rounded-none border-0' : 'max-w-5xl h-[88vh] rounded-2xl glass-card-gold border border-[#D4AF37]/50 shadow-[0_0_50px_rgba(0,0,0,0.85)]'} flex flex-col overflow-hidden relative`}>
         {/* Zalo Desktop Top App Header */}
         <div className="h-14 bg-gradient-to-r from-[#0068ff]/30 via-slate-900/90 to-[#D4AF37]/20 border-b border-white/10 px-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3">
